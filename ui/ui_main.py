@@ -1,8 +1,8 @@
-from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint, QRect, QSize, QUrl, Qt)
-from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-                         QFontDatabase, QIcon, QLinearGradient, QPalette,
-                         QPainter, QPixmap, QRadialGradient)
+from PyQt5.QtCore import (QCoreApplication, QMetaObject, QRect, Qt)
+from PyQt5.QtGui import (QFont,
+                         QIcon)
 from PyQt5.QtWidgets import *
+from utils import config
 
 
 class Ui_MainWindow(object):
@@ -21,6 +21,9 @@ class Ui_MainWindow(object):
         font.setPointSize(25)
         self.label.setFont(font)
         self.label.setAlignment(Qt.AlignCenter)
+        self.table = QTableView(self.centralwidget)
+        self.table.setObjectName(u"table")
+        self.table.resize(640, 480)
 
         self.verticalLayout.addWidget(self.label)
 
@@ -36,8 +39,11 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         QMetaObject.connectSlotsByName(MainWindow)
-    # setupUi
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"<strong>Салон красоты</strong>", None))
+        MainWindow.setWindowIcon(QIcon('../resources/beauty_logo.ico'))
+        # ! self.label.setText(QCoreApplication.translate("MainWindow", u"<strong>Салон красоты</strong>", None))
+        if config.create_connection():
+            query = 'SELECT * FROM Manufacturer'
+            self.table.setModel(config.display_data(query))

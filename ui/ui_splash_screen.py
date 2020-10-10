@@ -89,6 +89,7 @@ class Ui_SplashScreen(object):
 
     def retranslateUi(self, SplashScreen):
         SplashScreen.setWindowTitle(QCoreApplication.translate("SplashScreen", u"MainWindow", None))
+        SplashScreen.setWindowIcon(QIcon('../resources/beauty_logo.ico'))
         self.label_title.setText(QCoreApplication.translate("SplashScreen", u"Салон красоты", None))
         self.label_description.setText(QCoreApplication.translate("SplashScreen", u"Описание пока отсутствует", None))
         self.label_loading.setText(QCoreApplication.translate("SplashScreen", u"загрузка...", None))
