@@ -1,6 +1,5 @@
 from PyQt5.QtCore import (QCoreApplication, QMetaObject, QRect, Qt)
-from PyQt5.QtGui import (QFont,
-                         QIcon)
+from PyQt5.QtGui import (QFont, QIcon)
 from PyQt5.QtWidgets import *
 from utils import config
 

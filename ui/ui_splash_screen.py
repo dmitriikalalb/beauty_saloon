@@ -1,8 +1,5 @@
-from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
-from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
-    QRadialGradient)
+from PyQt5.QtCore import (QCoreApplication, QMetaObject, QRect, Qt)
+from PyQt5.QtGui import (QFont, QIcon)
 from PyQt5.QtWidgets import *
 
 
