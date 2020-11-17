@@ -1,36 +1,17 @@
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel
+import pymssql as s
 
-SERVER_NAME = 'DESKTOP-3KMSCN1\SQLEXPRESS'
-DATABASE = 'Beauty_Salon'
+SERVER_NAME = r'DESKTOP-3KMSCN1\SQLEXPRESS'
+DATABASE = 'Beauty_Salon_User5'
 USERNAME = 'Python_User'
 PASSWORD = '123'
 
-
 def create_connection():
-    conn_string = f'DRIVER={{SQL Server}};' \
-                  f'SERVER={SERVER_NAME};' \
-                  f'UID={USERNAME};' \
-                  f'PWD={PASSWORD};' \
-                  f'DATABASE={DATABASE};'
+    connection_string = s.connect(server=SERVER_NAME, database=DATABASE, user=USERNAME, password=PASSWORD)
+    cursor = connection_string.cursor()
+    cursor.execute('SELECT * FROM Manufacturer')
+    string = cursor.fetchone()
 
-    global db
-    db = QSqlDatabase.addDatabase('QODBC')
-    db.setDatabaseName(conn_string)
+    while string:
+        print(string)
 
-    if db.open():
-        print('Успешно подключено к БД')
-        return True
-    else:
-        print('Не удалось подключится к БД')
-        return False
-
-
-def display_data(query):
-    print('processing query...')
-    qry = QSqlQuery(db)
-    qry.exec(query)
-
-    model = QSqlQueryModel()
-    model.setQuery(qry)
-
-    return model
+    connection_string.close()

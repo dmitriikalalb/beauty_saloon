@@ -1,48 +1,46 @@
-from PyQt5.QtCore import (QCoreApplication, QMetaObject, QRect, Qt)
-from PyQt5.QtGui import (QFont, QIcon)
-from PyQt5.QtWidgets import *
-from utils import config
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QLabel, QGridLayout, QWidget, QVBoxLayout
+from ui.ui_card import ElementCard
 
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        if MainWindow.objectName():
-            MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(640, 480)
-        self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout = QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.label = QLabel(self.centralwidget)
-        self.label.setObjectName(u"label")
-        font = QFont()
-        font.setFamily(u"Roboto Thin")
-        font.setPointSize(25)
-        self.label.setFont(font)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.table = QTableView(self.centralwidget)
-        self.table.setObjectName(u"table")
-        self.table.resize(640, 480)
+class SquareLabel(QLabel):
+    def __init__(self, parent=None):
+        super(SquareLabel, self).__init__(parent)
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QColor(223, 230, 248))
+        self.setPalette(p)
+        self.setMouseTracking(True)
 
-        self.verticalLayout.addWidget(self.label)
+        self.setFixedSize(300, 300)
+        self.setScaledContents(True)
 
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 640, 21))
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QStatusBar(MainWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+    def mouseMoveEvent(self, event):
+        print("On Hover", event.pos().x(), event.pos().y())
 
-        self.retranslateUi(MainWindow)
+    def mousePressEvent(self, event):
+        print(event)
 
-        QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        MainWindow.setWindowIcon(QIcon('../resources/beauty_logo.ico'))
-        # ! self.label.setText(QCoreApplication.translate("MainWindow", u"<strong>Салон красоты</strong>", None))
-        if config.create_connection():
-            query = 'SELECT * FROM Manufacturer'
-            self.table.setModel(config.display_data(query))
+class SuperEdit(QWidget):
+    def __init__(self, data, parent=None):
+        super(SuperEdit, self).__init__(parent)
+        counter = 0
+        row = 0
+        layout = QGridLayout()
+        layout.setContentsMargins(2, 2, 2, 2)
+
+        for name in range(0, 15):
+            card = QVBoxLayout()
+
+            # label = SquareLabel(self)
+            # label.setText(name)
+
+            if counter >= 4:
+                counter = 0
+                row = 1
+
+            card.addWidget(ElementCard())
+            layout.addLayout(card, row, counter)
+            counter += 1
+        self.setLayout(layout)
