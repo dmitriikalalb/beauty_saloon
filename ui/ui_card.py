@@ -1,21 +1,27 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QFrame
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen
 from PyQt5 import QtCore
-import os
+from ui.ui_add_edit import AddEditWindow
+from utils import helpers
 
 
 class ElementCard(QWidget):
-    def __init__(self):
+    def __init__(self, title, cost, is_active, images):
         super().__init__()
+        self.addEditWindow = AddEditWindow()
         self.imagenumber = 0
+        self.title = title
+        self.cost = cost
+        self.is_active_d = is_active
+        self.imagelist = images
         self.initUI()
         self.label.setMouseTracking(True)
         self.frame_color = QtCore.Qt.darkGray
-        self.setMaximumHeight(300)
-
+        self.setMinimumHeight(400)
+        self.setMaximumSize(250, 400)
 
     def initUI(self):
+
         layout = QVBoxLayout()
         hbox = QHBoxLayout()
         hbox.setAlignment(QtCore.Qt.AlignHCenter)
@@ -38,23 +44,33 @@ class ElementCard(QWidget):
         self.rb_group.setId(self.radio2, 2)
         self.rb_group.setId(self.radio3, 3)
 
-        self.rb_group.buttonClicked.connect(self.rbPressEvent)
-
         hbox.addWidget(self.radio0)
         hbox.addWidget(self.radio1)
         hbox.addWidget(self.radio2)
         hbox.addWidget(self.radio3)
 
-        self.name = QLabel('Название товара')
-        self.price = QLabel('Стоимость товара')
-        self.is_active = QLabel('Активен или нет')
+        self.rb_group.buttonClicked.connect(self.rbPressEvent)
+
+        self.name = QLabel(self.title)
+        # * Обрезаем текст если он слишком длинный чтобы разметка карточки не ломалась
+        txt = ''
+        for text in self.title.split()[:4]:
+            txt = txt + text
+        if len(txt) >= 25:
+            self.name.setText(self.title[:25] + '...')
+            self.name.setToolTip(self.title)
+        self.price = QLabel(str(int(self.cost)) + ' руб.')
+        self.is_active = QLabel('Неактивен' if not self.is_active_d else '')
 
         self.name.setAlignment(QtCore.Qt.AlignHCenter)
+        self.name.setWordWrap(True)
         self.price.setAlignment(QtCore.Qt.AlignHCenter)
+        self.name.setWordWrap(True)
         self.is_active.setAlignment(QtCore.Qt.AlignHCenter)
+        self.name.setWordWrap(True)
 
-        self.name.setFont(QFont('Roboto', 15, QFont.Normal))
-        self.price.setFont(QFont('Roboto', 15, QFont.Normal))
+        self.name.setFont(QFont('Tahoma', 13, QFont.Normal))
+        self.price.setFont(QFont('Tahoma', 15, QFont.Normal))
 
         self.setLayout(layout)
         self.label = QLabel()
@@ -68,18 +84,15 @@ class ElementCard(QWidget):
         self.resize(200, 300)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.showimage(0)
-        self.show()
 
     def showimage(self, imagenumber):
-        directory = "D:\\PyCharmProjects\\anacondaProject\\resources"
-        self.imagelist = os.listdir(directory)[:4]
-        pixmap = QPixmap(directory + '\\' + self.imagelist[imagenumber])
+        directory = "images/"
+        pixmap = QPixmap(directory + self.imagelist[imagenumber])
         print(self.imagelist)
 
         self.label.setPixmap(pixmap)
-        self.label.setFixedSize(200, 220)
+        self.label.setFixedHeight(220)
         self.label.setScaledContents(True)
-
 
     def mouseMoveEvent(self, event):
         pos_x = event.pos().x()
@@ -92,25 +105,47 @@ class ElementCard(QWidget):
             self.radio2.setChecked(True)
         else:
             self.radio3.setChecked(True)
-        self.showimage(self.rb_group.checkedId())
+        try:
+            self.showimage(self.rb_group.checkedId())
+        except:
+            print("Одна кратинка")
 
     def rbPressEvent(self):
         self.showimage(self.rb_group.checkedId())
 
-# Цвет рамки заднего фона карточки
+    # ? Цвет рамки заднего фона карточки
 
     def paintEvent(self, event):
         painter = QPainter(self)
 
-        painter.setBrush(QtCore.Qt.gray)
+        if self.is_active_d:
+            painter.setBrush(QtCore.Qt.white)
+        else:
+            painter.setBrush(QtCore.Qt.gray)
         painter.setPen(QPen(self.frame_color, 5))
 
         painter.drawRect(self.rect())
 
+    def contextMenuEvent(self, event):
+        contextMenu = QMenu(self)
+        edit_action = contextMenu.addAction('Редактировать')
+        delete_action = contextMenu.addAction('Удалить')
+        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+        if action == delete_action:
+            helpers.show_popup('Title', 'Message', self.popup_button)
+        elif action == edit_action:
+            # self.addEditWindow.input1.setText(self.name.text())
+            # self.addEditWindow.input2.setText(self.price.text())
+            self.addEditWindow.displayInfo()
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = ElementCard()
-    print(type(ElementCard))
-    print(type(QWidget))
-    sys.exit(app.exec_())
+    # ? Функция которая принимает ответ с диалогового окна
+    def popup_button(self, i):
+        msg = i.text()
+        if msg == '&Yes':
+            self.close()
+
+    def mousePressEvent(self, event):
+        if self.frame_color == QtCore.Qt.darkGray:
+            self.frame_color = QtCore.Qt.blue
+        elif self.frame_color == QtCore.Qt.blue:
+            self.frame_color = QtCore.Qt.darkGray
