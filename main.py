@@ -1,11 +1,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication
 
-from ui.ui_main import SuperEdit
+from ui.ui_main import TovarWindow
 
 if __name__ == '__main__':
-    names = ['Name 1', 'Name 2', 'Name 3', 'Name 4', 'Name 1', 'Name 2', 'Name 3']
-    app = QApplication([])
-    editor = SuperEdit(names)
+    app = QApplication(sys.argv)
+    editor = TovarWindow()
     editor.show()
     app.exec_()
