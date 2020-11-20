@@ -19,3 +19,9 @@ def execute_query(query):
     cursor.execute(query)
     result = cursor.fetchall()
     return result
+
+
+def delete(query):
+    cursor = connect.cursor()
+    cursor.execute(query)
+    cursor.commit()
