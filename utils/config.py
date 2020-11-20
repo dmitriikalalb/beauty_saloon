@@ -1,17 +1,21 @@
-import pymssql as s
+import pyodbc
 
 SERVER_NAME = r'DESKTOP-3KMSCN1\SQLEXPRESS'
 DATABASE = 'Beauty_Salon_User5'
 USERNAME = 'Python_User'
 PASSWORD = '123'
 
-def create_connection():
-    connection_string = s.connect(server=SERVER_NAME, database=DATABASE, user=USERNAME, password=PASSWORD)
-    cursor = connection_string.cursor()
-    cursor.execute('SELECT * FROM Manufacturer')
-    string = cursor.fetchone()
+connection_string = f'DRIVER={{SQL Server}};' \
+                    f'SERVER={SERVER_NAME};' \
+                    f'UID={USERNAME};' \
+                    f'PWD={PASSWORD};' \
+                    f'DATABASE={DATABASE};' \
+                    f'Trusted_connection=yes;'
+connect = pyodbc.connect(connection_string)
 
-    while string:
-        print(string)
 
-    connection_string.close()
+def execute_query(query):
+    cursor = connect.cursor()
+    cursor.execute(query)
+    result = cursor.fetchall()
+    return result
