@@ -9,12 +9,15 @@ class TovarWindow(QWidget):
     def __init__(self, parent=None):
         super(TovarWindow, self).__init__(parent)
         # / Menu
+        self.tovar_not_exist = QLabel('Товаров не найдено :(')
         self.action_desc = QAction()
         self.action_asc = QAction()
         self.action_clear_filter = QAction()
         self.menu_filter = QMenu()
         self.menu_cost = QMenu(self.menu_filter)
         self.menu_manufacturers = QMenu(self.menu_filter)
+        # ? Чтобы запомнить поставщика. Необходимо для фильтра.
+        self.man = ''
         # / Scroll area
         self.scrollAreaWidgetContents = QWidget()
         self.scrollArea = QScrollArea()
@@ -53,6 +56,9 @@ class TovarWindow(QWidget):
 
         # ? Стиль надписи с кол-вом товаров внизу окна
         self.tovar_count.setFont(QFont('Tahoma', 9, QFont.Normal))
+        # ? Стиль надписи сверху если товары отсутсвуют
+        self.tovar_not_exist.setFont(QFont('Tahoma', 18, QFont.Bold))
+        self.tovar_not_exist.setStyleSheet('padding-left: 50px;')
 
         # ? Стиль кнопки фильтра
         # * Вкладка "по возрастанию"
@@ -134,63 +140,59 @@ class TovarWindow(QWidget):
         # ? Кол-во товаров
         self.tovar_count.setText(f'Количество товаров: {self.card_layout.count()} из {len(data)}')
 
+        if self.card_layout.count() == 0:
+            self.clear_layout()
+            self.card_layout.addWidget(self.tovar_not_exist, 0, 0)
+
     def orderByDesc(self):
         self.clear_layout()
         self.action_asc.setChecked(False)
-        question = self.find_area.text()
-        query = 'SELECT Title, Cost, IsActive, MainImagePath FROM Product '
-        # ? Если поле поиска заполнено
-        if question:
-            self.create_tovar(query + f'WHERE Title LIKE \'%{question}%\''
-                                      f' OR Description LIKE \'%{question}%\' ORDER BY Cost DESC')
-        # ? Если поле поиска не заполнено
-        else:
-            self.create_tovar(query + 'ORDER BY Cost DESC')
+        query = self.check_filters()
+        self.create_tovar(query)
 
     def orderByAsc(self):
         self.clear_layout()
         self.action_desc.setChecked(False)
-        question = self.find_area.text()
-        query = 'SELECT Title, Cost, IsActive, MainImagePath FROM Product '
-        # ? Если поле поиска заполнено
-        if question:
-            self.create_tovar(query + f'WHERE Title LIKE \'%{question}%\''
-                                      f' OR Description LIKE \'%{question}%\' ORDER BY Cost ASC')
-        # ? Если поле поиска не заполнено
-        else:
-            self.create_tovar(query + 'ORDER BY Cost ASC')
+        query = self.check_filters()
+        self.create_tovar(query)
 
     def clear_filter(self):
         self.clear_layout()
         self.action_desc.setChecked(False)
         self.action_asc.setChecked(False)
+        self.find_area.setText('')
+        self.man = ''
         self.create_tovar('SELECT Title, Cost, IsActive, MainImagePath FROM Product')
 
     @pyqtSlot(QAction)
     def orderByManufacturer(self, action):
-        question = self.find_area.text()
-        query = 'SELECT Title, Cost, IsActive, MainImagePath FROM Product'
-        if question:
-            query = query + f'WHERE Title LIKE \'%{question}%\' OR Description LIKE \'%{question}%\'' \
-                            f' AND ManufacturerID = \'{action.text()}\''
-        else:
-            query = query + f' WHERE ManufacturerID = \'{action.text()}\''
-        if self.action_asc.isChecked():
-            query = query + ' ORDER BY Cost ASC'
-        elif self.action_desc.isChecked():
-            query = query + ' ORDER BY Cost DESC'
-
+        self.man = action.text()
+        query = self.check_filters()
         self.clear_layout()
         self.create_tovar(query)
 
     def onTextChanged(self):
         self.clear_layout()
+        query = self.check_filters()
+        self.create_tovar(query)
+
+    def check_filters(self):
+        manufacturer = self.man
         question = self.find_area.text()
-        # ? Если строка поиска пустая то после if нет смысла выполнять код
-        if not question:
-            return self.create_tovar('SELECT Title, Cost, IsActive, MainImagePath FROM Product ')
-        self.create_tovar(f'SELECT Title, Cost, IsActive, MainImagePath FROM Product WHERE Title'
-                          f' LIKE \'%{question}%\' OR Description LIKE \'%{question}%\'')
+        query = 'SELECT Title, Cost, IsActive, MainImagePath FROM Product'
+        # ? Формируем запрос опираясь на фильтры
+        if question:
+            query = query + f' WHERE Title LIKE \'%{question}%\' OR Description LIKE \'%{question}%\''
+        if question and manufacturer:
+            query = query + f' AND ManufacturerID = \'{manufacturer}\''
+        if not question and manufacturer:
+            query = query + f' WHERE ManufacturerID = \'{manufacturer}\''
+        if self.action_desc.isChecked():
+            query = query + ' ORDER BY Cost DESC'
+        if self.action_asc.isChecked():
+            query = query + ' ORDER BY Cost ASC'
+
+        return query
 
     def clear_layout(self):
         elements = self.card_layout.count()

@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen
 from PyQt5 import QtCore
 from ui.ui_add_edit import AddEditWindow
-from utils import helpers
+from utils import helpers, config
 
 
 class ElementCard(QWidget):
@@ -88,7 +88,6 @@ class ElementCard(QWidget):
     def showimage(self, imagenumber):
         directory = "images/"
         pixmap = QPixmap(directory + self.imagelist[imagenumber])
-        print(self.imagelist)
 
         self.label.setPixmap(pixmap)
         self.label.setFixedHeight(220)
@@ -107,8 +106,8 @@ class ElementCard(QWidget):
             self.radio3.setChecked(True)
         try:
             self.showimage(self.rb_group.checkedId())
-        except:
-            print("Одна кратинка")
+        except Exception as e:
+            print(e)
 
     def rbPressEvent(self):
         self.showimage(self.rb_group.checkedId())
@@ -126,24 +125,36 @@ class ElementCard(QWidget):
 
         painter.drawRect(self.rect())
 
+    # ? Контекстное меню ПКМ
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
         edit_action = contextMenu.addAction('Редактировать')
         delete_action = contextMenu.addAction('Удалить')
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+        # * Если нажали удалить
         if action == delete_action:
-            helpers.show_popup('Title', 'Message', self.popup_button)
+            helpers.show_popup('Удалить запить?', 'Вы уверены что хотите удалить данный товар?', self.popup_button)
+        # * Если нажали редактировать
         elif action == edit_action:
-            # self.addEditWindow.input1.setText(self.name.text())
-            # self.addEditWindow.input2.setText(self.price.text())
+            # * Передаем на форму редактирования нужные параметры
+            self.addEditWindow.type_of_window.setText('Редактировать товар')
             self.addEditWindow.displayInfo()
 
     # ? Функция которая принимает ответ с диалогового окна
     def popup_button(self, i):
         msg = i.text()
         if msg == '&Yes':
-            self.close()
+            # ! Удаляем товар
+            try:
+                query = f'DELETE FROM Product WHERE Title = \'{self.title}\''
+                config.delete(query)
+                self.close()
+            except Exception as e:
+                # / Если БД по каким-то причинам не разрешила удалить, вывожу ошибку
+                print(e)
+                helpers.show_error_popup(e)
 
+    # ? Смена цвета рамки при нажатии на карточку
     def mousePressEvent(self, event):
         if self.frame_color == QtCore.Qt.darkGray:
             self.frame_color = QtCore.Qt.blue
