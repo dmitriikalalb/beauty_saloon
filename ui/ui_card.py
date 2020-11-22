@@ -27,27 +27,34 @@ class ElementCard(QWidget):
         hbox.setAlignment(QtCore.Qt.AlignHCenter)
 
         self.rb_group = QButtonGroup()
-        self.radio0 = QRadioButton()
-        self.radio1 = QRadioButton()
-        self.radio2 = QRadioButton()
-        self.radio3 = QRadioButton()
+        for img in range(0, len(self.imagelist)):
+            radio = QRadioButton()
+            self.rb_group.addButton(radio)
+            self.rb_group.setId(radio, img)
+            hbox.addWidget(radio)
+        self.rb_group.button(0).setChecked(True)
 
-        self.radio0.setChecked(True)
-
-        self.rb_group.addButton(self.radio0)
-        self.rb_group.addButton(self.radio1)
-        self.rb_group.addButton(self.radio2)
-        self.rb_group.addButton(self.radio3)
-
-        self.rb_group.setId(self.radio0, 0)
-        self.rb_group.setId(self.radio1, 1)
-        self.rb_group.setId(self.radio2, 2)
-        self.rb_group.setId(self.radio3, 3)
-
-        hbox.addWidget(self.radio0)
-        hbox.addWidget(self.radio1)
-        hbox.addWidget(self.radio2)
-        hbox.addWidget(self.radio3)
+        # self.radio0 = QRadioButton()
+        # self.radio1 = QRadioButton()
+        # self.radio2 = QRadioButton()
+        # self.radio3 = QRadioButton()
+        #
+        # self.radio0.setChecked(True)
+        #
+        # self.rb_group.addButton(self.radio0)
+        # self.rb_group.addButton(self.radio1)
+        # self.rb_group.addButton(self.radio2)
+        # self.rb_group.addButton(self.radio3)
+        #
+        # self.rb_group.setId(self.radio0, 0)
+        # self.rb_group.setId(self.radio1, 1)
+        # self.rb_group.setId(self.radio2, 2)
+        # self.rb_group.setId(self.radio3, 3)
+        #
+        # hbox.addWidget(self.radio0)
+        # hbox.addWidget(self.radio1)
+        # hbox.addWidget(self.radio2)
+        # hbox.addWidget(self.radio3)
 
         self.rb_group.buttonClicked.connect(self.rbPressEvent)
 
@@ -95,20 +102,19 @@ class ElementCard(QWidget):
         self.label.setScaledContents(True)
 
     def mouseMoveEvent(self, event):
-        pos_x = event.pos().x()
-        width = self.label.width()
-        if pos_x <= width/4:
-            self.radio0.setChecked(True)
-        elif width/4 <= pos_x <= width/2:
-            self.radio1.setChecked(True)
-        elif width/2 <= pos_x <= width/1.3:
-            self.radio2.setChecked(True)
-        else:
-            self.radio3.setChecked(True)
-        try:
-            self.showimage(self.rb_group.checkedId())
-        except Exception as e:
-            print(e)
+        x = event.pos().x()
+        step = self.label.width() / len(self.imagelist)
+        width_step = 0
+        res = {}
+        counter = 0
+        while counter < len(self.imagelist):
+            width_step += step
+            res.update({counter: width_step})
+            counter += 1
+            for i in res.keys():
+                if res[i] < x:
+                    self.rb_group.button(i).setChecked(True)
+            self.rbPressEvent()
 
     def rbPressEvent(self):
         self.showimage(self.rb_group.checkedId())
