@@ -25,3 +25,9 @@ def delete(query):
     cursor = connect.cursor()
     cursor.execute(query)
     cursor.commit()
+
+
+def update(query):
+    cursor = connect.cursor()
+    cursor.execute(query)
+    cursor.commit()

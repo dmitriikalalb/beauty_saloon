@@ -18,7 +18,7 @@ def show_popup(title, message, function):
 
 
 # ! Диалоговое окно для ошибок
-def show_error_popup(error_msg):
+def show_error_popup(detail, error_msg='По каким-то причинам произошла ошибка'):
     msg = QMessageBox()
     msg.setWindowTitle('Ошибка')
     msg.setWindowIcon(QIcon('images/beauty_logo.ico'))
@@ -26,7 +26,7 @@ def show_error_popup(error_msg):
     msg.setIcon(QMessageBox.Critical)
     msg.setStandardButtons(QMessageBox.Ok)
     msg.setDefaultButton(QMessageBox.Ok)
-    msg.setText('По каким-то причинам произошла ошибка              ')
-    msg.setDetailedText(str(error_msg))
+    msg.setText(error_msg + '\t\t\t\t')
+    msg.setDetailedText(str(detail))
 
     msg.exec_()
