@@ -1,7 +1,10 @@
+import uuid
+
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import *
 from ui.ui_card import ElementCard
+from ui.ui_add_edit import AddEditWindow
 from utils import config, styleSheet
 
 
@@ -29,10 +32,12 @@ class TovarWindow(QWidget):
         self.find_area = QLineEdit()
         self.find_area.textChanged.connect(self.onTextChanged)
         self.tool_button = QToolButton()
+        self.add_button = QPushButton()
         # / Window
         self.setWindowIcon(QIcon('images/beauty_logo.ico'))
         self.setMinimumSize(1100, 840)
         self.setWindowTitle('Салон красоты')
+        self.addEditWindow = AddEditWindow()
 
         self.initUi()
 
@@ -94,9 +99,15 @@ class TovarWindow(QWidget):
         self.tool_button.setPopupMode(True)
         self.tool_button.setMenu(self.menu_filter)
 
+        self.add_button.setIcon(QIcon('images/add.png'))
+        self.add_button.setFixedSize(50, 50)
+        self.add_button.setToolTip('Добавить товар')
+        self.add_button.clicked.connect(self.add_tovar)
+
         # ? Добавление виджетов на форму
         gbox.addWidget(self.find_area)
         gbox.addWidget(self.tool_button)
+        gbox.addWidget(self.add_button)
         vbox.addLayout(gbox)
         vbox.addWidget(self.scrollArea)
         vbox.addWidget(self.tovar_count)
@@ -140,6 +151,7 @@ class TovarWindow(QWidget):
         # ? Кол-во товаров
         self.tovar_count.setText(f'Количество товаров: {self.card_layout.count()} из {len(data)}')
 
+        # ? Если товаров нет, или не существует
         if self.card_layout.count() == 0:
             self.clear_layout()
             self.card_layout.addWidget(self.tovar_not_exist, 0, 0)
@@ -203,3 +215,18 @@ class TovarWindow(QWidget):
                 self.card_layout.removeWidget(w)
                 w.setParent(None)
                 w.deleteLater()
+
+    def add_tovar(self):
+        try:
+            self.addEditWindow.type_of_window.setText('Добавить товар')
+            self.addEditWindow.setWindowTitle('Добавить товар')
+            self.addEditWindow.uuid_label.setVisible(False)
+            self.addEditWindow.uuid.setVisible(False)
+            self.addEditWindow.uuid.setText(str(uuid.uuid4()))
+            self.addEditWindow.scrollarea.setStyleSheet('border: none;')
+            self.addEditWindow.attached.setText('')
+            self.addEditWindow.btn_change_image.setText('Загрузить изображение')
+            self.addEditWindow.btn_ok.setText('Добавить')
+            self.addEditWindow.displayInfo()
+        except Exception as e:
+            print(e)

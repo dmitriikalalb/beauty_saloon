@@ -74,6 +74,7 @@ class ElementCard(QWidget):
 
         self.setLayout(layout)
         self.label = QLabel()
+        self.label.setText('Изображение отсутствует')
         self.label.setMouseTracking(True)
         layout.addWidget(self.label)
         layout.addLayout(hbox)
@@ -137,7 +138,43 @@ class ElementCard(QWidget):
         # * Если нажали редактировать
         elif action == edit_action:
             # * Передаем на форму редактирования нужные параметры
-            self.addEditWindow.type_of_window.setText('Редактировать товар')
+            self.addEditWindow.setWindowTitle('Редактировать товар')
+            self.addEditWindow.type_of_window.setText(f'Редактировать товар \n"{self.title}"')
+            # ? Достаем недостающие данные(Описание товара, уникальный идентификатор и свзяанные товары)
+            missing_data = config.execute_query(f'SELECT Description, Guid, IsActive, Cost, ManufacturerID FROM Product'
+                                                f' WHERE Title = \'{self.title}\'')
+            self.addEditWindow.uuid.setDisabled(True)
+            self.addEditWindow.title.setText(self.title)
+            self.addEditWindow.old_title = str(self.title)
+            for miss in missing_data:
+                self.addEditWindow.uuid.setText('' if not miss[1] or miss[1] is None else str(miss[1]))
+                self.addEditWindow.description.setText('' if not miss[0] or miss[0] is None else str(miss[0]))
+                self.addEditWindow.is_active_checkbox.setChecked(bool(miss[2]))
+                self.addEditWindow.cost.setText(str(int(miss[3])))
+                index = self.addEditWindow.manufacturer.findText(str(miss[4]), QtCore.Qt.MatchFixedString)
+                self.addEditWindow.manufacturer.setCurrentIndex(index)
+                self.addEditWindow.photo.setPixmap(QPixmap('images/' + self.imagelist[0]))
+                self.addEditWindow.photo_name.setText(str(self.imagelist[0]))
+            attached_products = config.execute_query(f'SELECT Title, MainImagePath, Cost FROM Product '
+                                                     f'INNER JOIN AttachedProduct '
+                                                     f'ON AttachedProduct.AttachedProductID=Product.Title '
+                                                     f'WHERE MainProductID = \'{self.title}\'')
+
+            for product in attached_products:
+                split_image = str(product[1]).split('\\')
+                image = QLabel()
+                image.setPixmap(QPixmap('images/' + split_image[1]))
+                image.setScaledContents(True)
+                image.setFixedSize(40, 40)
+                title = QLabel()
+                title.setText(str(product[0]) + ' - ' + str(int(product[2])) + ' руб.')
+                title.setStyleSheet('font: 8pt Tahoma;')
+                title.setWordWrap(True)
+                self.addEditWindow.vbox.addRow(image, title)
+                line = QFrame()
+                line.setFrameShape(QFrame.HLine)
+                line.setFrameShadow(QFrame.Sunken)
+                self.addEditWindow.vbox.addRow(line)
             self.addEditWindow.displayInfo()
 
     # ? Функция которая принимает ответ с диалогового окна
