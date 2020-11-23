@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen
 from PyQt5 import QtCore
 from ui.ui_add_edit import AddEditWindow
+from ui.ui_history import HistoryWindow
 from utils import helpers, config
 
 
@@ -9,6 +10,7 @@ class ElementCard(QWidget):
     def __init__(self, title, cost, is_active, images):
         super().__init__()
         self.addEditWindow = AddEditWindow()
+        self.historyWindow = HistoryWindow()
         self.imagenumber = 0
         self.title = title
         self.cost = cost
@@ -33,28 +35,6 @@ class ElementCard(QWidget):
             self.rb_group.setId(radio, img)
             hbox.addWidget(radio)
         self.rb_group.button(0).setChecked(True)
-
-        # self.radio0 = QRadioButton()
-        # self.radio1 = QRadioButton()
-        # self.radio2 = QRadioButton()
-        # self.radio3 = QRadioButton()
-        #
-        # self.radio0.setChecked(True)
-        #
-        # self.rb_group.addButton(self.radio0)
-        # self.rb_group.addButton(self.radio1)
-        # self.rb_group.addButton(self.radio2)
-        # self.rb_group.addButton(self.radio3)
-        #
-        # self.rb_group.setId(self.radio0, 0)
-        # self.rb_group.setId(self.radio1, 1)
-        # self.rb_group.setId(self.radio2, 2)
-        # self.rb_group.setId(self.radio3, 3)
-        #
-        # hbox.addWidget(self.radio0)
-        # hbox.addWidget(self.radio1)
-        # hbox.addWidget(self.radio2)
-        # hbox.addWidget(self.radio3)
 
         self.rb_group.buttonClicked.connect(self.rbPressEvent)
 
@@ -137,6 +117,8 @@ class ElementCard(QWidget):
         contextMenu = QMenu(self)
         edit_action = contextMenu.addAction('Редактировать')
         delete_action = contextMenu.addAction('Удалить')
+        contextMenu.addSeparator()
+        history_action = contextMenu.addAction('История продаж')
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         # * Если нажали удалить
         if action == delete_action:
@@ -165,7 +147,6 @@ class ElementCard(QWidget):
                                                      f'INNER JOIN AttachedProduct '
                                                      f'ON AttachedProduct.AttachedProductID=Product.Title '
                                                      f'WHERE MainProductID = \'{self.title}\'')
-
             for product in attached_products:
                 split_image = str(product[1]).split('\\')
                 image = QLabel()
@@ -182,6 +163,11 @@ class ElementCard(QWidget):
                 line.setFrameShadow(QFrame.Sunken)
                 self.addEditWindow.vbox.addRow(line)
             self.addEditWindow.displayInfo()
+        # * Если нажали историю продаж
+        elif action == history_action:
+            self.historyWindow.setWindowTitle(f'История товара "{self.title}"')
+            self.historyWindow.creatingTables(f"SELECT * FROM ProductSale WHERE ProductID = '{self.title}'")
+            self.historyWindow.show_history()
 
     # ? Функция которая принимает ответ с диалогового окна
     def popup_button(self, i):
