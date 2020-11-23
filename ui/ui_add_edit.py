@@ -1,7 +1,7 @@
 import os
 import shutil
 from PyQt5 import QtCore
-from PyQt5.QtGui import QIcon, QFont, QPixmap
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QRegExpValidator
 from PyQt5.QtWidgets import *
 from utils import styleSheet, config, helpers
 
@@ -32,6 +32,7 @@ class AddEditWindow(QWidget):
         self.btn_ok = QPushButton('Сохранить')
         self.btn_cancel = QPushButton('Отмена')
         self.btn_change_image = QPushButton('Сменить изображение')
+        self.btn_add_attached = QPushButton('Добавить связанный товар')
         self.old_title = ''
         # / Window
         self.setWindowIcon(QIcon('images/beauty_logo.ico'))
@@ -40,7 +41,6 @@ class AddEditWindow(QWidget):
                            f'QLabel, QCheckBox, QComboBox{{{styleSheet.LABEL}}}\n'
                            f'#main_label{{ font-weight: bold;}}'
                            f'#btn_ok{{{styleSheet.BTN_SUCCESS}}}'
-                           f'#btn_change_image{{{styleSheet.BTN_SUCCESS}}}'
                            f'#btn_cancel{{{styleSheet.BTN_WARNING}}}')
         self.initUi()
 
@@ -70,6 +70,9 @@ class AddEditWindow(QWidget):
         self.uuid.setPlaceholderText('Уникальный идентификатор')
         self.title.setPlaceholderText('Название товара')
         self.cost.setPlaceholderText('Стоимость товара')
+        rx = QtCore.QRegExp('[0-9]+\.[0-9]{2}')
+        validator = QRegExpValidator(rx)
+        self.cost.setValidator(validator)
         self.description.setPlaceholderText('Описание товара')
 
         manufacturers = config.execute_query('SELECT Name FROM Manufacturer')
@@ -85,8 +88,12 @@ class AddEditWindow(QWidget):
         self.photo_name.setAlignment(QtCore.Qt.AlignHCenter)
         self.btn_change_image.setFont(QFont('Tahoma', 12, QFont.Normal))
         self.btn_change_image.setFixedHeight(40)
-        self.btn_change_image.setObjectName('btn_change_image')
+        self.btn_change_image.setObjectName('btn_ok')
         self.btn_change_image.clicked.connect(self.btn_img_clicked)
+        self.btn_add_attached.setFont(QFont('Tahoma', 12, QFont.Normal))
+        self.btn_add_attached.setFixedHeight(40)
+        self.btn_add_attached.setObjectName('btn_ok')
+        self.btn_add_attached.clicked.connect(self.btn_attached_clicked)
 
         # * Bottom
         btn_box = QHBoxLayout()
@@ -123,6 +130,7 @@ class AddEditWindow(QWidget):
         leftvbox.addWidget(self.btn_change_image)
         leftvbox.addWidget(self.attached)
         leftvbox.addWidget(self.scrollarea)
+        leftvbox.addWidget(self.btn_add_attached)
         gbox.addRow(leftwidget, rightwidget)
 
         main_layout.addWidget(self.type_of_window)
@@ -147,7 +155,7 @@ class AddEditWindow(QWidget):
         if msg == '&Yes':
             uuid = self.uuid.text()
             title = self.title.text()
-            cost = int(self.cost.text())
+            cost = float(self.cost.text()) if self.cost.text() else ''
             mainImage = f' Товары салона красоты\\{self.photo_name.text()}' \
                 if self.photo_name.text() != 'Название фото.png' else ''
             isActive = int(self.is_active_checkbox.isChecked())
@@ -177,10 +185,13 @@ class AddEditWindow(QWidget):
                 except Exception as e:
                     helpers.show_error_popup(e)
             elif sender.text() == 'Отмена':
-                self.close()
+                try:
+                    self.close()
+                except Exception as e:
+                    print(e)
 
     def btn_img_clicked(self):
-        fname = QFileDialog.getOpenFileName(self, 'Выберите изображение', 'C:/', "Image files (*.jpg *.gif *.png)")
+        fname = QFileDialog.getOpenFileName(self, 'Выберите изображение', 'C:/', "Image files (*.jpg *.png)")
         try:
             self.imagePath = fname[0]
             if self.imagePath:
@@ -197,3 +208,6 @@ class AddEditWindow(QWidget):
                                              'Загруженное вами изображение весит больше 2мб')
         except Exception as e:
             print(e)
+
+    def btn_attached_clicked(self):
+        pass

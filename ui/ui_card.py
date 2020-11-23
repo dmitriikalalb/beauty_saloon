@@ -138,7 +138,7 @@ class ElementCard(QWidget):
                 self.addEditWindow.uuid.setText('' if not miss[1] or miss[1] is None else str(miss[1]))
                 self.addEditWindow.description.setText('' if not miss[0] or miss[0] is None else str(miss[0]))
                 self.addEditWindow.is_active_checkbox.setChecked(bool(miss[2]))
-                self.addEditWindow.cost.setText(str(int(miss[3])))
+                self.addEditWindow.cost.setText(self.toFixed(float(miss[3]), 2))
                 index = self.addEditWindow.manufacturer.findText(str(miss[4]), QtCore.Qt.MatchFixedString)
                 self.addEditWindow.manufacturer.setCurrentIndex(index)
                 self.addEditWindow.photo.setPixmap(QPixmap('images/' + self.imagelist[0]))
@@ -167,6 +167,8 @@ class ElementCard(QWidget):
         elif action == history_action:
             self.historyWindow.setWindowTitle(f'История товара "{self.title}"')
             self.historyWindow.creatingTables(f"SELECT * FROM ProductSale WHERE ProductID = '{self.title}'")
+            index = self.historyWindow.productsale.findText(self.title, QtCore.Qt.MatchFixedString)
+            self.historyWindow.productsale.setCurrentIndex(index)
             self.historyWindow.show_history()
 
     # ? Функция которая принимает ответ с диалогового окна
@@ -189,3 +191,6 @@ class ElementCard(QWidget):
             self.frame_color = QtCore.Qt.blue
         elif self.frame_color == QtCore.Qt.blue:
             self.frame_color = QtCore.Qt.darkGray
+
+    def toFixed(self, num, digits=0):
+        return f"{num:.{digits}f}"
