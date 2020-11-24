@@ -181,6 +181,10 @@ class AddEditWindow(QWidget):
                             f" IsActive, ManufacturerID, Description)" \
                             f" VALUES ('{uuid}','{title}',{cost},'{mainImage}',{isActive},'{manufacturer}','{desc}')"
                     config.update(query)
+                    if self.imagePath:
+                        # ? Копируем изображение в нашу директорию с изображениями
+                        destination = os.path.abspath('./images')
+                        shutil.copy(self.imagePath, destination)
                     self.close()
                 except Exception as e:
                     helpers.show_error_popup(e)
